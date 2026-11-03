@@ -9,6 +9,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>くもぽん</title>
   <meta name="description" content="びんを まわして 雲を くっつけて、口から ぽんっと だす パズル。ブラウザで そのまま あそべます。">
+  <!-- リンクカード（X・LINE などに URL を貼ったときの見出し・説明・絵）。URL は公開の場所の絶対 URL（カードを作る側はこのページだけを読む）。
+       絵は Web/tools/make_og.py が作る（変えたら番号を上げる。同じ名前だと古い絵が出続ける） -->
+  <link rel="canonical" href="https://kumopon.kumao.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="くもぽん">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:url" content="https://kumopon.kumao.app/">
+  <meta property="og:title" content="くもぽん（ブラウザで あそべる）">
+  <meta property="og:description" content="びんを まわして 雲を くっつけて、口から ぽんっと だす パズル。ブラウザで そのまま あそべます。">
+  <meta property="og:image" content="https://kumopon.kumao.app/assets/og/kumopon-og-1.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="くもぽん　びんを まわして ぽん！　にじ雲の できた びんと、雲の なかまたち">
+  <meta name="twitter:card" content="summary_large_image">
   <!-- アドレスバーの色（タイトルは空の上の色。遊ぶ画面では ui.js が場面の空の色に替える） -->
   <meta name="theme-color" content="#98d0f9">
   <meta name="color-scheme" content="light">
@@ -24,8 +39,8 @@
   <link rel="preload" href="assets/fonts/kumopon-rounded-black.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="assets/fonts/kumopon-rounded-bold.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="assets/img/title_bg.jpg" as="image">
-  <link rel="stylesheet" href="v/9355a30d5ada/app.css">
-  <script type="module" src="v/9355a30d5ada/js/main.js"></script>
+  <link rel="stylesheet" href="v/89db034ee0d1/app.css">
+  <script type="module" src="v/89db034ee0d1/js/main.js"></script>
 </head>
 <body>
   <canvas id="game" aria-label="くもぽんの びん"></canvas>
