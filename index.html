@@ -1,0 +1,45 @@
+<!doctype html>
+<!-- ブラウザ版くもぽん（本番のページの骨組み）。
+     <canvas id="game"> に描画の担当（js/render/）が盤面を描き、その上の <div id="ui"> に画面（js/ui/ui.js）を重ねる。
+     つなぐのは js/main.js。読み込みに失敗したら main.js が #boot-error に文を入れて出す。読み込みが済むと <html> に ready が付く -->
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- 拡大しない（ダブルタップ・2 本指）。ノッチの下まで使う（安全域は CSS の env() で避ける） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>くもぽん</title>
+  <meta name="description" content="びんを まわして 雲を くっつけて、口から ぽんっと だす パズル。ブラウザで そのまま あそべます。">
+  <!-- アドレスバーの色（タイトルは空の上の色。遊ぶ画面では ui.js が場面の空の色に替える） -->
+  <meta name="theme-color" content="#98d0f9">
+  <meta name="color-scheme" content="light">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="くもぽん">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <!-- 字体は先に読み始める（画面は読み終わるまで出さない） -->
+  <link rel="preload" href="assets/fonts/kumopon-rounded-black.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="assets/fonts/kumopon-rounded-bold.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="assets/img/title_bg.jpg" as="image">
+  <link rel="stylesheet" href="v/e2bf3908e99c/app.css">
+  <script type="module" src="v/e2bf3908e99c/js/main.js"></script>
+</head>
+<body>
+  <canvas id="game" aria-label="くもぽんの びん"></canvas>
+  <div id="ui"></div>
+  <div id="loading" role="status" aria-live="polite">
+    <svg class="loading-cloud" viewBox="0 0 84 64" aria-hidden="true">
+      <path fill="#fff" stroke="#c9dcf5" stroke-width="2.5" d="M22 58h40a14 14 0 0 0 3-27.7A20 20 0 0 0 28.4 20 15 15 0 0 0 7 36a11 11 0 0 0 15 22z"/>
+      <ellipse cx="34" cy="40" rx="2.6" ry="3.4" fill="#5c4054"/><ellipse cx="50" cy="40" rx="2.6" ry="3.4" fill="#5c4054"/>
+      <ellipse cx="29" cy="46" rx="4" ry="2.2" fill="#ff9aac" opacity="0.5"/><ellipse cx="55" cy="46" rx="4" ry="2.2" fill="#ff9aac" opacity="0.5"/>
+    </svg>
+    <div>よみこみちゅう…</div>
+  </div>
+  <div id="boot-error" role="alert" hidden></div>
+  <div id="rotate" aria-hidden="true">スマホを たてに して あそんでね</div>
+  <noscript><div id="boot-error">JavaScript を オンにすると あそべます。</div></noscript>
+</body>
+</html>

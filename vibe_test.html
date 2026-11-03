@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>くもぽん 振動のためし</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #fff7ee; color: #5c4054; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  p { font-size: 13px; margin: 4px 0 10px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+  button { font: inherit; font-weight: 700; font-size: 15px; padding: 12px 14px; min-height: 48px; border-radius: 16px; border: 0; background: #ff859e; color: #fff; }
+  button.sub { background: #8fd0e8; }
+  .seg button { background: #fff; color: #5c4054; border: 2px solid #ffd2da; }
+  .seg button.on { background: #ff859e; color: #fff; border-color: #ff859e; }
+  #pad { height: 140px; border-radius: 20px; background: #dff1ff; display: grid; place-items: center; font-weight: 700; touch-action: none; user-select: none; }
+  pre { white-space: pre-wrap; font-size: 12px; background: #fff; border-radius: 12px; padding: 10px; min-height: 3em; }
+  .warn { color: #e0607e; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>振動のためし</h1>
+<p>ゲームと同じ振動（iOS 版と同じ形を、Android の「震える・止まる」の長さに写したもの）を、ひとつずつ鳴らします。</p>
+<p id="support"></p>
+<div class="row seg" id="strength">
+  <button data-s="0">よわい</button><button data-s="1">ふつう</button><button data-s="2" class="on">つよい</button>
+</div>
+
+<h2 style="font-size:16px">合体（段ごと。くっついて育ったとき）</h2>
+<div class="row" id="merges"></div>
+<h2 style="font-size:16px">とくべつ</h2>
+<div class="row">
+  <button data-k="4" data-a="0.9">にじ雲ができた</button>
+  <button data-k="4" data-a="1.1">にじ雲が口を抜けた</button>
+  <button data-k="3" data-a="0.75">ぽんっ（返し）</button>
+  <button data-k="5" data-a="0.8">きらめき</button>
+</div>
+<h2 style="font-size:16px">こまかい</h2>
+<div class="row">
+  <button class="sub" data-k="0" data-a="0.22">指を置いた</button>
+  <button class="sub" data-k="0" data-a="0.34">ダイヤルのカチッ（目印）</button>
+  <button class="sub" data-k="0" data-a="0.16">ダイヤルのカチッ</button>
+  <button class="sub" data-k="0" data-a="0.3">雲が来た</button>
+  <button class="sub" data-k="8" data-a="0.4">ぶつかり</button>
+</div>
+<h2 style="font-size:16px">口でしぼる「むにゅ〜」（続く振動）</h2>
+<div id="pad">ここを押さえて、上下に動かすと強さが変わる</div>
+<pre id="log"></pre>
+
+<script type="module">
+import { Engine } from './v/e2bf3908e99c/js/engine.js';
+import { Haptics } from './v/e2bf3908e99c/js/haptics.js';
+
+// 数（段の数・合体の強さの倍率・振動のつよさの曲線・続く振動の刻み）はここに書かない。どれもゲーム（kumopon.wasm）から受け取る
+const log = document.getElementById('log');
+const show = (s) => { log.textContent = s; };
+const engine = await Engine.load();
+const haptics = new Haptics(engine.vibeTuning());
+document.getElementById('support').innerHTML = haptics.supported
+  ? 'この端末のブラウザは震えます（navigator.vibrate がある）。マナーモードや「タッチの振動」の設定で止まることがあります。'
+  : '<span class="warn">このブラウザは震えません（iPhone の Safari・パソコンには navigator.vibrate が無い）。並びだけ出します。</span>';
+
+let strength = 2;
+const apply = () => engine.settings({ spinReversed: false, shake: true, haptics: true, strength, sound: false });
+apply();
+
+const merges = document.getElementById('merges');
+for (let t = 1; t <= engine.tierTop(); t++) {
+  const b = document.createElement('button');
+  b.textContent = `${t + 1} 段`;
+  b.dataset.k = '2'; b.dataset.c = String(t); b.dataset.a = '1';
+  // ゲームが合体の触覚に掛ける強さの倍率（JarModeV4.Tuning.bandLevel。段の帯ごと）
+  b.dataset.b = String(engine.mergeLevel(t));
+  merges.append(b);
+}
+
+function play(k, a, b, c) {
+  const n = engine.x.kp_vibe(k, a, b, c);
+  const pattern = Array.from(engine.floats(engine.x.kp_vibe_ptr(), n));
+  haptics.play(pattern);
+  const on = pattern.filter((_, i) => i % 2 === 0).reduce((x, y) => x + y, 0);
+  show(`並び（ms。震える・止まる…）: [${pattern.map((x) => Math.round(x)).join(', ')}]\n震える合計 ${Math.round(on)} ms`);
+}
+
+document.body.addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.s != null) {
+    strength = Number(b.dataset.s);
+    document.querySelectorAll('#strength button').forEach((x) => x.classList.toggle('on', x === b));
+    apply();
+    return;
+  }
+  if (b.dataset.k != null) play(Number(b.dataset.k), Number(b.dataset.a || 0), Number(b.dataset.b || 1), Number(b.dataset.c || 0));
+});
+
+// 続く振動: 押さえている間、上下の位置で強さ（上ほど強い）。ゲームと同じく つよさの設定を通す（HapticPatterns.level）
+const pad = document.getElementById('pad');
+const level = (i) => engine.hapticLevel(i);
+let holding = false;
+const setFrom = (e) => {
+  const r = pad.getBoundingClientRect();
+  const i = Math.min(1, Math.max(0, 1 - (e.clientY - r.top) / r.height));
+  haptics.continuous(2, level(i));
+  pad.textContent = `強さ ${i.toFixed(2)}（つよさを通して ${level(i).toFixed(2)}）`;
+};
+pad.addEventListener('pointerdown', (e) => { holding = true; pad.setPointerCapture(e.pointerId); setFrom(e); });
+pad.addEventListener('pointermove', (e) => { if (holding) setFrom(e); });
+const end = () => { holding = false; haptics.continuous(2, 0); pad.textContent = 'ここを押さえて、上下に動かすと強さが変わる'; };
+pad.addEventListener('pointerup', end);
+pad.addEventListener('pointercancel', end);
+const tick = () => { haptics.tick(); requestAnimationFrame(tick); };
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

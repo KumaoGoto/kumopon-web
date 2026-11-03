@@ -1,0 +1,130 @@
+{
+ "note": "Web/tools/make_audio.py が書く。手で直さない",
+ "sounds": {
+  "boing": [
+   "boing.wav"
+  ],
+  "chime": [
+   "chime.wav"
+  ],
+  "clatter": [
+   "clatter.wav"
+  ],
+  "clink": [
+   "clink.wav"
+  ],
+  "creak_loop": [
+   "creak_loop.wav"
+  ],
+  "dim": [
+   "dim.wav"
+  ],
+  "drip": [
+   "drip.wav"
+  ],
+  "heartbeat": [
+   "heartbeat.wav"
+  ],
+  "hiss": [
+   "hiss.wav"
+  ],
+  "hum_loop": [
+   "hum_loop.wav"
+  ],
+  "merge_body": [
+   "merge_body.wav",
+   "merge_body_2.wav",
+   "merge_body_3.wav",
+   "merge_body_4.wav"
+  ],
+  "pad": [
+   "pad.wav"
+  ],
+  "plop": [
+   "plop.wav"
+  ],
+  "pon": [
+   "pon.wav"
+  ],
+  "pop": [
+   "pop.wav"
+  ],
+  "rumble_loop": [
+   "rumble_loop.wav"
+  ],
+  "sparkle": [
+   "sparkle.wav",
+   "sparkle_2.wav",
+   "sparkle_3.wav"
+  ],
+  "spawn": [
+   "spawn.wav"
+  ],
+  "squeeze_loop": [
+   "squeeze_loop.wav"
+  ],
+  "squelch": [
+   "squelch.wav",
+   "squelch_2.wav",
+   "squelch_3.wav",
+   "squelch_4.wav"
+  ],
+  "squirt": [
+   "squirt.wav"
+  ],
+  "thunder": [
+   "thunder.wav"
+  ],
+  "tick": [
+   "tick.wav"
+  ],
+  "wake": [
+   "wake.wav"
+  ],
+  "whoosh": [
+   "whoosh.wav"
+  ]
+ },
+ "music": {
+  "title": {
+   "file": "bgm_title.m4a",
+   "rate": 48000,
+   "frames": 6315904,
+   "loopStart": 24000,
+   "loopFrames": 6267904,
+   "priming": 2112,
+   "remainder": 64,
+   "bytes": 2172728
+  },
+  "play": {
+   "file": "bgm_play.m4a",
+   "rate": 48000,
+   "frames": 6314880,
+   "loopStart": 24000,
+   "loopFrames": 6266880,
+   "priming": 2112,
+   "remainder": 64,
+   "bytes": 2168108
+  },
+  "last": {
+   "file": "bgm_last.m4a",
+   "rate": 48000,
+   "frames": 3680128,
+   "loopStart": 24000,
+   "loopFrames": 3632128,
+   "priming": 2112,
+   "remainder": 64,
+   "bytes": 1270427
+  },
+  "result": {
+   "file": "bgm_result.m4a",
+   "rate": 48000,
+   "frames": 1105792,
+   "loopStart": 24000,
+   "loopFrames": 1057792,
+   "priming": 2112,
+   "remainder": 64,
+   "bytes": 381327
+  }
+ }
+}

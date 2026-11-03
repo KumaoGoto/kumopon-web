@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>くもぽん 重さの測り</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family: system-ui, sans-serif; margin: 16px; background: #fff7ee; color: #5c4054; }
+  button { font: inherit; font-weight: 700; padding: 12px 18px; border-radius: 999px; border: 0; background: #ff859e; color: #fff; }
+  pre { white-space: pre-wrap; background: #fff; padding: 12px; border-radius: 12px; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>くもぽん 重さの測り（段階 0）</h1>
+<p>画面なしで、自動プレイ（上手）を 1 回 120 秒ぶん回し、物理と決まりの 1 歩（1/120 秒）にかかる時間を測ります。描画・音は入りません。
+Android の実機で開いて、結果を写して送ってください（docs/web/feasibility_ja.md の 4 章・13 章）。</p>
+<button id="go">はかる（3 回・20 秒ほど）</button>
+<pre id="out">まだ</pre>
+<script type="module">
+import { Engine } from './v/e2bf3908e99c/js/engine.js';
+const out = document.getElementById('out');
+const log = (s) => { out.textContent += s + '\n'; };
+document.getElementById('go').onclick = async () => {
+  out.textContent = '';
+  log(`端末: ${navigator.userAgent}`);
+  log(`論理コア: ${navigator.hardwareConcurrency ?? '?'}・メモリ: ${navigator.deviceMemory ?? '?'} GB・画面: ${screen.width}×${screen.height} @${devicePixelRatio}`);
+  const t0 = performance.now();
+  const engine = await Engine.load();
+  log(`読み込み: ${(performance.now() - t0).toFixed(0)} ms`);
+  const x = engine.x;
+  let sum = 0, worst = 0;
+  for (const seed of [1000, 8919, 16838]) {
+    await new Promise((r) => setTimeout(r, 50));
+    const a = performance.now();
+    const score = x.kp_bench(seed, 120);
+    const ms = (performance.now() - a) / (120 * 120);
+    sum += ms; worst = Math.max(worst, ms);
+    log(`種 ${seed}: 点 ${score}・1 歩 ${ms.toFixed(3)} ms（物理 ${(x.kp_bench_part(2) / 1000).toFixed(3)} ms）`);
+  }
+  const avg = sum / 3;
+  log(`平均 1 歩 ${avg.toFixed(3)} ms → 1 秒あたり ${(avg * 120).toFixed(0)} ms（1 コアの ${(avg * 12).toFixed(0)}%）・いちばん重い回 ${worst.toFixed(3)} ms`);
+  log('目安: 1 コアの 30% 以下なら足りる（2026-11-03 に Mac〈M4〉の Chrome で 3%）');
+};
+</script>
+</body>
+</html>
