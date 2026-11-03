@@ -13,6 +13,7 @@ import { FeelDispatch } from './feel.js';
 import { UI } from './ui/ui.js';
 import * as store from './storage.js';
 import { Ranking } from './ranking.js';
+import { shareResult } from './share.js';
 
 const SCREEN = { menu: 0, playing: 1, result: 2 };
 
@@ -69,6 +70,7 @@ class App {
       openRanking: () => this.ranking.open(this.ui.rankingSlot()),
       settingsChanged: (s) => this.applySettings(s),
       tap: () => this.tap(),
+      share: (result) => shareResult(result),
     });
     this.ranking.onRunStatus = (text) => this.ui.setRunRank?.(text);
     this.applySettings(this.settings, false);
@@ -94,6 +96,7 @@ class App {
     this.bindLifecycle();
     this.showTitle();
     document.documentElement.classList.add('ready');
+    this.keepSaves();
     requestAnimationFrame((t) => this.loop(t));
   }
 
@@ -217,6 +220,16 @@ class App {
     const bookNew = store.addToBook(result.madeByTier || [], result.maxTier);
     this.ui.showResult(result, { isNewBest, records: store.loadRecords(), addedId: added?.id ?? null, bookNew });
     this.ranking.afterRun(result);
+    this.keepSaves();
+  }
+
+  /** 保存を消されにくくしてもらう（storage.js の requestPersistence。画面には何も出さない）。残してもらえたら、もう頼まない */
+  keepSaves() {
+    if (this.savesKept) return;
+    store.requestPersistence().then((kept) => {
+      this.savesKept = kept;
+      console.info('[main] 保存を消されにくくする:', kept ? '残してもらえる' : 'まだ（ふつうの保存）');
+    });
   }
 
   /** タイトルの間の 1 フレームの間隔を覚える（新しいものから IDLE_SAMPLES 個） */

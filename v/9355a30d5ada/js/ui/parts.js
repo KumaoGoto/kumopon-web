@@ -158,6 +158,7 @@ const SVG = {
   chevron: '<path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
   back: '<path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
   arrowUp: '<path d="M12 20V5M5.5 11.5L12 5l6.5 6.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
+  share: '<path d="M12 3.2v11M7.6 7.4L12 3l4.4 4.4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M8.4 10.2H6.8a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10.4a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1.6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>',
   phone: '<rect x="6.5" y="2.5" width="11" height="19" rx="2.6" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M10.5 18.5h3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
 };
 
@@ -199,9 +200,12 @@ export function outlined(text, size, color = C.ink, tag = 'div') {
 
 /** 押すと沈む厚みのボタン（ChunkyButtonStyle）。面（.face）の下に濃い色の厚み（.edge）を敷き、押すと面が沈む（ばねで戻る） */
 export function chunky(label, { color = C.pink, edge = C.pinkDeep, text = '#fff', size = 22, depth = 6, hPad = 34, vPad = 14, minWidth = 0, fill = false, iconName = null, onClick } = {}) {
+  const labelEl = h('span.label', { text: label });
+  // 幅を分け合うボタン（fill）は、字が入りきらなければ縮める（iOS の minimumScaleFactor。省略の「…」にしない）
+  if (fill) fits(labelEl, size, 0.6);
   const face = h('span.face', null,
     iconName ? icon(iconName, Math.round(size * 0.95)) : null,
-    h('span.label', { text: label }));
+    labelEl);
   const btn = h('button.chunky' + (fill ? '.fill' : ''), {
     type: 'button',
     style: {
@@ -219,18 +223,52 @@ export function squishy(label, color, onClick) {
   return h('button.squishy', { type: 'button', style: { '--c': color }, onclick: onClick, text: label });
 }
 
-/** 字が入りきらなければ縮める（minimumScaleFactor）。base は元の大きさ（px） */
+/** 字が入りきらなければ縮める（minimumScaleFactor）。base は元の大きさ（px）、min はそれ以上は縮めない割合。
+ *  入れ物は親の要素: 親の内側の幅（padding を除く）から、横に並ぶ兄弟（親が横向きの flex のとき。ボタンの絵など）とすき間を引いた幅に収める。
+ *  Android は端末の「文字の大きさ」の設定で字だけが大きくなる（箱の幅は変わらない）ので、決まった幅の箱の字は必ずこれを通す */
 export function fitText(el, base, min = 0.5) {
   el.style.fontSize = base + 'px';
-  const room = el.parentElement ? el.parentElement.clientWidth : el.clientWidth;
+  const box = el.parentElement;
+  const own = getComputedStyle(el);
+  let room = el.clientWidth;
+  if (own.overflowX !== 'visible') {
+    // 自分の箱で切る字（overflow: hidden。表の升目・ボタンの字）は、自分の箱の内側に収める
+    room = el.clientWidth - (parseFloat(own.paddingLeft) || 0) - (parseFloat(own.paddingRight) || 0);
+  } else if (box) {
+    const cs = getComputedStyle(box);
+    room = box.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    if (cs.display.endsWith('flex') && !cs.flexDirection.startsWith('column')) {
+      const gap = parseFloat(cs.columnGap) || 0;
+      // 兄弟の幅は並べたときの幅で量る（出てくるときの拡大の動きに左右されない。絵〈SVG〉は offsetWidth を持たないので計算した幅）
+      for (const sib of box.children) {
+        if (sib === el) continue;
+        room -= (sib instanceof HTMLElement ? sib.offsetWidth : parseFloat(getComputedStyle(sib).width) || 0) + gap;
+      }
+    }
+  }
   const need = el.scrollWidth;
-  if (room > 0 && need > room) {
-    const k = Math.max(min, room / need);
+  if (room > 0 && need > room + 0.5) {
+    // ちょうどの幅だと、端数の丸めで「…」になることがあるので 1px 余らせる
+    const k = Math.max(min, (room - 1) / need);
     el.style.fontSize = (base * k).toFixed(2) + 'px';
     el.style.textShadow = el.classList.contains('ol') ? outlineShadow(base * k) : el.style.textShadow;
   } else if (el.classList.contains('ol')) {
     el.style.textShadow = outlineShadow(base);
   }
+}
+
+/** root の中の data-fit の付いた字を、全部それぞれの入れ物に収める（data-fit は元の大きさ px、data-fit-min は縮める下限の割合）。
+ *  画面を出したとき・画面の大きさが変わったときに呼ぶ */
+export function fitAll(root) {
+  if (!root) return;
+  for (const el of root.querySelectorAll('[data-fit]')) fitText(el, Number(el.dataset.fit), Number(el.dataset.fitMin || 0.6));
+}
+
+/** 字を入れ物に収める印を付ける（fitAll が読む）。返り値は el */
+export function fits(el, base, min = 0.6) {
+  el.dataset.fit = String(base);
+  el.dataset.fitMin = String(min);
+  return el;
 }
 
 // ---- 動きの曲線 ----

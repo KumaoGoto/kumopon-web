@@ -7,6 +7,7 @@
 // 画面は iOS の RankingSheet（App/Shell/RankingSheet.swift）の中身を、画面の担当が用意した口（ui.rankingSlot()）に組む。
 
 import * as store from './storage.js';
+import { fitAll } from './ui/parts.js';
 
 const API = 'https://kumopon-ranking.saikyo-eigo.workers.dev';
 /** ブラウザ版の版（サーバーの WEB_VERS。決まりは iOS の e6 と同じ） */
@@ -250,11 +251,12 @@ export class Ranking {
     const list = el('ol', 'kr-list');
     recs.forEach((r, i) => {
       const li = el('li', 'kr-row');
-      li.innerHTML = `<span class="kr-rank">${i + 1}</span><span class="kr-name">${esc(r.cloud || '')}<small>${esc(new Date(r.date).toLocaleDateString('ja-JP'))}</small></span>`
+      li.innerHTML = `<span class="kr-rank">${i + 1}</span><span class="kr-name" data-fit="15" data-fit-min="0.75">${esc(r.cloud || '')}<small>${esc(new Date(r.date).toLocaleDateString('ja-JP'))}</small></span>`
         + `<span class="kr-score">${fmt(r.score)} 点<small>${r.rainbows ? `にじ雲 ${r.rainbows}こ・` : ''}${r.seconds ? fmtSeconds(r.seconds) : ''}</small></span>`;
       list.append(li);
     });
     body.append(list);
+    fitAll(list);
   }
 
   renderJoin(body, renaming = false) {
@@ -340,12 +342,13 @@ export class Ranking {
         for (const e of r.top) {
           const mine = !!e.mine;   // サーバーが自分の行に付ける印
           const li = el('li', 'kr-row' + (mine ? ' mine' : ''));
-          li.innerHTML = `<span class="kr-rank">${e.rank}</span><span class="kr-name">${esc(e.name)}${mine ? '<small>あなた</small>' : ''}</span>`
+          li.innerHTML = `<span class="kr-rank">${e.rank}</span><span class="kr-name" data-fit="15" data-fit-min="0.75">${esc(e.name)}${mine ? '<small>あなた</small>' : ''}</span>`
             + `<span class="kr-score">${fmt(e.score)} 点<small>${e.rainbows ? `にじ雲 ${e.rainbows}こ・` : ''}${e.seconds ? fmtSeconds(e.seconds) : ''}</small></span>`;
           if (!mine) li.onclick = () => this.rowMenu(li, e);
           list.append(li);
         }
         body.append(list);
+        fitAll(list);
         body.append(el('div', 'kr-small', '名前を押すと、通報・表示しない ができます'));
       }
       if (!r.top.some((e) => e.mine)) {
@@ -415,7 +418,7 @@ function ensureStyle() {
 .kr-row { position: relative; display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 16px; background: rgb(255 255 255 / 0.85); }
 .kr-row.mine { background: rgb(255 219 224); }
 .kr-rank { font-weight: 900; font-size: 18px; text-align: center; }
-.kr-name { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kr-name { font-size: 15px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kr-name small, .kr-score small { display: block; font-size: 11px; font-weight: 700; color: rgb(140 112 133); }
 .kr-score { font-weight: 900; text-align: right; }
 .kr-menu { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }

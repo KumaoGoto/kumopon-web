@@ -143,3 +143,23 @@ export function storageWorks() {
     return false;
   }
 }
+
+/**
+ * この端末の保存（ベスト・記録・ずかん・設定・ランキングの ID と、手元に置いたゲームのファイル）を、ブラウザに「消されにくく」してもらう
+ * （navigator.storage.persist。2026-11-03 依頼者「プレイヤーに影響がないなら」）。画面には何も出さない:
+ * - Chrome・Edge・Android の Chrome・Safari は、聞く窓を出さずに、ブラウザが様子（よく開くか・ホーム画面に置いたか など）を見て決める
+ * - Firefox は「保存を続けてよいか」を聞く窓を出すので頼まない（遊ぶ人に何も聞かない）
+ * 断られても今までどおり動く（ふつうの保存のまま。容量が足りないときにブラウザが消すことがある）。
+ * 何度頼んでもよい（よく遊ぶほど通りやすくなるので、main.js が読み込みのときとランの終わりに頼む）。返り値は残してもらえるか
+ */
+export async function requestPersistence() {
+  try {
+    const s = navigator.storage;
+    if (!s || typeof s.persist !== 'function' || typeof s.persisted !== 'function') return false;
+    if (await s.persisted()) return true;
+    if (/\bFirefox\//.test(navigator.userAgent)) return false;
+    return await s.persist();
+  } catch {
+    return false;
+  }
+}

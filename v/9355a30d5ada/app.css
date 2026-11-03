@@ -784,9 +784,26 @@ button { -webkit-tap-highlight-color: transparent; }
   color: var(--ink);
 }
 .stat.link { box-shadow: inset 0 0 0 1.5px rgba(115, 168, 230, 0.5); }
-.stat-value { font-size: 18px; font-weight: 900; white-space: nowrap; }
+.stat-value { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: 18px; font-weight: 900; white-space: nowrap; }
 .stat-label { display: flex; align-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
 .book-chip.fresh { padding: 5px 12px; min-height: 30px; }
+/* ［シェア］（iOS の ShareLink のカプセル: 白 90%・字は ink・縁は ink の 18%） */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin-top: 6px;
+  padding: 7px 20px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 1.5px rgba(92, 64, 84, 0.18);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+}
 .result-buttons { display: flex; align-items: flex-start; gap: 8px; width: 100%; padding-top: 2px; }
 .sticker {
   position: absolute;
@@ -1051,8 +1068,8 @@ button { -webkit-tap-highlight-color: transparent; }
 /* まだ出会っていない雲は絵だけ影（colorMultiply(.black) と opacity 0.16） */
 .book-art.shadow .book-cloud { filter: brightness(0) opacity(0.16); }
 .book-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; text-align: left; }
-.book-name-line, .book-pts-line { display: flex; align-items: baseline; gap: 6px; }
-.book-pts-line { gap: 8px; }
+.book-name-line, .book-pts-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; }
+.book-pts-line { gap: 2px 8px; }
 .book-name { font-size: 17px; font-weight: 900; white-space: nowrap; }
 .book-row.top .book-name { font-size: 19px; }
 .book-tier { font-size: 10px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
@@ -1072,7 +1089,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .size-track { position: relative; flex: 1 1 auto; height: 7px; border-radius: 999px; background: rgba(92, 64, 84, 0.08); }
 .size-fill { height: 100%; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(92, 64, 84, 0.15); }
 .size-text { font-size: 9.5px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.book-detail { font-size: 10.5px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 説明は狭い画面では 3 行まで折り返す（小さくしすぎない） */
+.book-detail { font-size: 10.5px; font-weight: 700; color: var(--ink-soft); line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
 .merge-arrow {
   display: flex;
   align-items: center;

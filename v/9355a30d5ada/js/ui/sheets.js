@@ -3,7 +3,8 @@
 // 上の見出しのあたりを下へ引くと閉じる（presentationDragIndicator の代わり）。後ろの幕を押しても、Esc でも閉じる。
 // パソコンの広い画面では、遊ぶ列と同じくらいの幅で真ん中に出す
 
-import { C, h, icon, img, outlined, fmt, monthDay, animate, CSS_EASE, EASE, TIERS, IMG, LINKS, DEFAULT_RULES } from './parts.js';
+import { C, h, icon, img, outlined, fmt, monthDay, animate, fitAll, fits, CSS_EASE, EASE, TIERS, IMG, LINKS, DEFAULT_RULES } from './parts.js';
+import { VERSION_LABEL } from '../version.js';
 
 const OPEN_MS = 420;
 const CLOSE_MS = 260;
@@ -196,7 +197,8 @@ export class SettingsSheet extends Sheet {
       group(null, [rulesRow]),
       group('この端末の記録', [this.storageText]),
       group(null, [privacy, this.storeRow]),
-      h('div.version', { text: 'くもぽん ブラウザ版' }));
+      // 版（js/version.js）と組みの印。問い合わせのときと、新しい版が届いたかを見るときに使う
+      h('div.version', { text: `くもぽん ブラウザ版 ${VERSION_LABEL}` }));
     this.rulesPage = h('div.page.page-rules', { hidden: true });
     this.body.append(this.main, this.rulesPage);
   }
@@ -309,6 +311,7 @@ export class BookSheet extends Sheet {
     list.append(h('div.book-foot', { text: 'にじ雲どうしは くっつかない。口から 出すか、のこったまま おわると 点' }));
     this.body.replaceChildren(progress, list);
     this.open();
+    fitAll(list);
     // 結果の「そだてた雲」から開いたときは、その雲の行へ（上の 3 段なら最初から見えている）
     if (focus != null && focus < n - 3 && rows[focus]) {
       setTimeout(() => this.scrollTo(rows[focus]), 450);
@@ -327,9 +330,10 @@ export class BookSheet extends Sheet {
     },
     art,
     h('div.book-info', null,
-      h('div.book-name-line', null, h('span.book-name', { text: name }), h('span.book-tier', { text: `${i + 1}段目` })),
+      // 名前と点は、横の札〈何段目・+45びょう〉の分を空けて縮める（iOS の minimumScaleFactor）。縮めても入らない狭い画面では札が次の行へ回る
+      h('div.book-name-line', null, fits(h('span.book-name', { text: name }), top ? 19 : 17, 0.7), h('span.book-tier', { text: `${i + 1}段目` })),
       h('div.book-pts-line', null,
-        h('span.book-pts', { text: `${fmt(t.points)} 点` }),
+        fits(h('span.book-pts', { text: `${fmt(t.points)} 点` }), top ? 20 : 17, 0.6),
         t.gain > 0 ? h('span.book-gain', { text: `+${t.gain}びょう` }) : null),
       h('div.size-bar', null,
         h('div.size-track', null, h('div.size-fill', { style: { width: `max(6px, ${(t.widthRatio * 100).toFixed(1)}%)`, background: swatch } })),
