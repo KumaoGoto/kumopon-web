@@ -15,7 +15,7 @@
 //   ui.showResult(result, { isNewBest, records, addedId, bookNew }) / ui.setRunRank(text|null)
 //   ui.openSettings(settings) / ui.openBook(book, tierNames) / ui.wipe(midway) / ui.rankingSlot()
 
-import { C, h, icon, img, outlined, chunky, squishy, fmt, fitText, animate, installSprings, CSS_EASE, EASE, IMG, LINKS, TIERS, DEFAULT_RULES, ENDLESS_INTRO, local } from './parts.js';
+import { C, h, icon, img, outlined, chunky, squishy, fmt, fitText, fitAll, fits, animate, installSprings, CSS_EASE, EASE, IMG, LINKS, TIERS, DEFAULT_RULES, ENDLESS_INTRO, local } from './parts.js';
 import { HUD } from './hud.js';
 import { CloudWipe } from './wipe.js';
 import { SettingsSheet, BookSheet, RankingSheet, rulesBox, introGoals } from './sheets.js';
@@ -152,6 +152,7 @@ export class UI {
     this.buildResult(result, extra);
     this.resultEl.hidden = false;
     this.resultEl.classList.add('shown');
+    fitAll(this.resultEl);   // 見えてから（幅が決まってから）字を箱に収める
     this.setTheme(THEME.result);
   }
 
@@ -166,6 +167,7 @@ export class UI {
     }
     line.hidden = false;
     line.replaceChildren(this.rankContent(String(text)));
+    fitAll(line);
     animate(line.firstChild, [{ transform: 'scale(0.8)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { spring: [0.4, 0.7] });
   }
 
@@ -376,9 +378,11 @@ export class UI {
       if (s.label === 'そだてた雲') {
         // 押すと くもずかん（その雲の行を目立たせる）
         return h('button.press.stat.link', { type: 'button', onclick: () => this.press(() => this.openBook(this.readBook(), null, r.maxTier)) },
-          h('div.stat-value', { text: s.value }), h('div.stat-label', null, h('span', { text: s.label }), icon('book', 9)));
+          fits(h('div.stat-value', { text: s.value }), 18, 0.5), fits(h('div.stat-label', null, h('span', { text: s.label }), icon('book', 9)), 11, 0.8));
       }
-      return h('div.stat', null, h('div.stat-value', { text: s.value }), h('div.stat-label', { text: s.label }));
+      // 箱の幅に収める（iOS の lineLimit(1)・minimumScaleFactor。「にゅうどう雲」が箱からはみ出さない。Android の大きな文字の設定でも
+      // 読めるよう、数字の箱は iOS の 0.6 より小さい 0.5 まで縮める）
+      return h('div.stat', null, fits(h('div.stat-value', { text: s.value }), 18, 0.5), fits(h('div.stat-label', { text: s.label }), 11, 0.8));
     });
 
     // 「ずかんに のった! にゅうどう雲」（はじめて出会った雲。押すと くもずかん）
@@ -386,7 +390,7 @@ export class UI {
     const news = (bookNew || []).filter((t) => t >= 0 && t < TIERS.length);
     if (news.length) {
       const text = news.length >= 3 ? `ずかんに ${news.length}しゅるい のった!` : `ずかんに のった! ${news.map((t) => TIERS[t].name).join('・')}`;
-      fresh = h('button.press.book-chip.fresh', { type: 'button', onclick: () => this.press(() => this.openBook(this.readBook(), null, r.maxTier)) }, icon('book', 12), h('span', { text }));
+      fresh = fits(h('button.press.book-chip.fresh', { type: 'button', onclick: () => this.press(() => this.openBook(this.readBook(), null, r.maxTier)) }, icon('book', 12), h('span', { text })), 13, 0.7);
     }
 
     this.rankLine = h('div.rank-line', { hidden: true });
@@ -452,8 +456,8 @@ export class UI {
       const row = h('button.press.rank-chips', { type: 'button', 'aria-label': text, onclick: () => this.press(() => this.openRanking()) });
       chips.forEach((m, i) => {
         const rank = Number(m[2].replace(/,/g, ''));
-        const num = h('div.chip-rank', { text: `${rank}位` });
-        row.append(h('div.rank-chip' + (i === 0 ? '.gold' : ''), null, h('div.chip-title', { text: m[1] }), num));
+        const num = fits(h('div.chip-rank', { text: `${rank}位` }), 16, 0.6);
+        row.append(h('div.rank-chip' + (i === 0 ? '.gold' : ''), null, fits(h('div.chip-title', { text: m[1] }), 10, 0.8), num));
         // 0.6 秒で数え下ろす（最後ゆっくり）
         const start = Math.max(rank * 3, rank + 20);
         const t0 = performance.now();
@@ -461,6 +465,7 @@ export class UI {
           const u = Math.min(1, (now - t0) / 600);
           num.textContent = `${start - Math.round((start - rank) * EASE.outCubic(u))}位`;
           if (u < 1 && num.isConnected) requestAnimationFrame(step);
+          else if (num.isConnected) fitAll(row);   // 数え終わった数で収め直す
         };
         requestAnimationFrame(step);
       });
@@ -544,6 +549,7 @@ export class UI {
 
   onResize() {
     this.measureBand();
+    fitAll(this.root);   // 字を箱に収め直す（向きを変えた・文字の大きさを変えた）
     if (this.screen === 'playing') fitText(this.hudView.score, 38);
     if (this.count && this.count.el.isConnected) fitText(this.count.el, 56);
   }
